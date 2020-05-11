@@ -26,7 +26,7 @@ pub struct VestingConfig {
     pub admin_release_period: U512,
 }
 
-
+#[allow(clippy::large_enum_variant)]
 pub enum Input {
 	Deploy(String, PublicKey, PublicKey, VestingConfig),
 	Pause,
