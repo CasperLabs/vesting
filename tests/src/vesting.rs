@@ -154,11 +154,14 @@ impl VestingContract {
 
 
     pub fn get_pause_status(&self) -> bool {
-        let status: Option<bool> = self.query_contract(String::from(key::PAUSE_FLAG));
+        let status: Option<bool> = self.query_contract(key::PAUSE_FLAG.to_string()));
         status.unwrap()
     }
 
-
+    pub fn get_released_amount(&self) -> u64 {
+        let amount: Option<U512> = self.query_contract(key::RELEASED_AMOUNT.to_string());
+        amount.unwrap().as_u64()
+    }
 
     pub fn get_total_amount(&self) -> u64 {
     	let balance: Option<U512> = self.query_contract(key::TOTAL_AMOUNT.to_string());
