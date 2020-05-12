@@ -18,10 +18,10 @@ mod tests {
 	}
 
 	#[test]
-	#[ignore]
 	fn test_withdraw(){
 		let config: VestingConfig = Default::default();
 		let mut vesting = VestingContract::deployed();
+		vesting.set_block_time(1000);
 		vesting.withdraw(Sender(ALI),1);
 		assert_eq!(1,1);
 	}
