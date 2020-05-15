@@ -7,15 +7,10 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-casperlabs-contract = "0.4.1"
-casperlabs-types = "0.4.1"
+casperlabs-contract = { git="https://github.com/CasperLabs/CasperLabs", branch="hackathon" }
+casperlabs-types = { git="https://github.com/CasperLabs/CasperLabs", branch="hackathon" }
 logic = { path = "../logic", package = "logic" }
 
-#[lib]
-#crate-type = ["cdylib"]
-#bench = false
-#doctest = false
-#test = false
 
 [features]
 default = ["casperlabs-contract/std", "casperlabs-types/std", "casperlabs-contract/test-support"]
