@@ -1,7 +1,5 @@
-use std::{convert::TryFrom, rc::Rc};
+use std::{convert::TryFrom};
 use casperlabs_contract::args_parser::ArgsParser;
-use casperlabs_engine_core::engine_state::{execution_result::ExecutionResult, CONV_RATE};
-use casperlabs_engine_shared::motes::Motes;
 use casperlabs_engine_test_support::{
     Code, Hash, SessionBuilder, TestContext, TestContextBuilder,
 };
@@ -74,10 +72,10 @@ pub struct VestingContract {
 	pub context: TestContext,
 	pub contract_hash: Hash,
 	pub indirect_hash: Hash,
+    pub current_time: u64
 }
 
 pub struct Sender(pub PublicKey);
-
 
 impl VestingContract {
 	pub fn deployed() -> Self {
@@ -102,6 +100,7 @@ impl VestingContract {
 		let session = SessionBuilder::new(code,args)
 			.with_address(account::ADMIN)
 			.with_authorization_keys(&[account::ADMIN])
+            .with_block_time(0)
 			.build();
 		context.run(session);
 		let contract_hash = Self::contract_hash(&context,VESTING_CONTRACT_NAME);
@@ -110,9 +109,13 @@ impl VestingContract {
 			context,
 			contract_hash,
 			indirect_hash,
+            current_time: 0
 		}
 	}
 
+    pub fn set_block_time(&mut self, block_time: u64) {
+        self.current_time = block_time;
+    }
 
 	pub fn contract_hash(context: &TestContext, name: &str) -> Hash {
 		let contract_ref: Key = context
@@ -131,6 +134,7 @@ impl VestingContract {
         let session = SessionBuilder::new(code, args)
             .with_address(address)
             .with_authorization_keys(&[address])
+            .with_block_time(self.current_time)
             .build();
         self.context.run(session);
     }
@@ -150,11 +154,14 @@ impl VestingContract {
 
 
     pub fn get_pause_status(&self) -> bool {
-        let status: Option<bool> = self.query_contract(String::from(key::PAUSE_FLAG));
+        let status: Option<bool> = self.query_contract(key::PAUSE_FLAG.to_string()));
         status.unwrap()
     }
 
-
+    pub fn get_released_amount(&self) -> u64 {
+        let amount: Option<U512> = self.query_contract(key::RELEASED_AMOUNT.to_string());
+        amount.unwrap().as_u64()
+    }
 
     pub fn get_total_amount(&self) -> u64 {
     	let balance: Option<U512> = self.query_contract(key::TOTAL_AMOUNT.to_string());
