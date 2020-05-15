@@ -154,7 +154,7 @@ impl VestingContract {
 
 
     pub fn get_pause_status(&self) -> bool {
-        let status: Option<bool> = self.query_contract(key::PAUSE_FLAG.to_string()));
+        let status: Option<bool> = self.query_contract(key::PAUSE_FLAG.to_string());
         status.unwrap()
     }
 
@@ -176,8 +176,7 @@ impl VestingContract {
     	self.call_indirect(
     		sender,
     		(
-    			self.contract_hash,
-    			method::WITHDRAW_PROXY,
+    			(method::WITHDRAW_PROXY,self.contract_hash),
     			U512::from(amount),
     		),
     	)
@@ -190,8 +189,8 @@ impl VestingContract {
     	self.call_indirect(
     		sender,
     		(
-    			self.contract_hash,
-    			method::PAUSE
+    			(method::PAUSE,
+                self.contract_hash),
     		),
     	)
     }
@@ -204,8 +203,8 @@ impl VestingContract {
         self.call_indirect(
             sender,
             (
-                self.contract_hash,
-                method::UNPAUSE
+                (method::UNPAUSE,
+                self.contract_hash),
             ),
         )
     }
@@ -218,8 +217,8 @@ impl VestingContract {
         self.call_indirect(
             sender,
             (
-                self.contract_hash,
-                method::ADMIN_RELEASE_PROXY
+                (method::ADMIN_RELEASE_PROXY,
+                self.contract_hash),
             ),
         )
     }

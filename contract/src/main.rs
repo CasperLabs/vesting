@@ -3,7 +3,7 @@
 
 extern crate alloc;
 
-mod api;
+mod input_parser;
 mod deployer;
 mod error;
 mod proxy;
