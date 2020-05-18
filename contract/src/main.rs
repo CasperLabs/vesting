@@ -5,8 +5,8 @@ extern crate alloc;
 
 mod deployer;
 mod error;
-mod input_parser;
 mod indirect;
+mod input_parser;
 mod vesting;
 
 #[no_mangle]
