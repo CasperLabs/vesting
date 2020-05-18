@@ -3,10 +3,10 @@
 
 extern crate alloc;
 
-mod input_parser;
 mod deployer;
 mod error;
-mod proxy;
+mod input_parser;
+mod indirect;
 mod vesting;
 
 #[no_mangle]

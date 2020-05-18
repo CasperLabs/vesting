@@ -1,7 +1,7 @@
 [package]
 name = "contract"
 version = "0.1.0"
-authors = ["karandh <karan@casperlabs.io>"]
+authors = ["karandh <karan@casperlabs.io>","Maciej Zieliński <maciej@casperlabs.io>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -13,4 +13,4 @@ logic = { path = "../logic", package = "logic" }
 
 
 [features]
-default = ["casperlabs-contract/std", "casperlabs-types/std", "casperlabs-contract/test-support"]
+default = ["casperlabs-contract/std", "casperlabs-types/std"]
