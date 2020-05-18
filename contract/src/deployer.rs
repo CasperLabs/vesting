@@ -1,16 +1,16 @@
 use alloc::{collections::BTreeMap, string::String};
 
-use crate::{
-    input_parser::{self, Input, VestingConfig},
-    error::Error,
-};
 use casperlabs_contract::{
     contract_api::{account, runtime, storage, system},
     unwrap_or_revert::UnwrapOrRevert,
 };
 use casperlabs_types::{account::PublicKey, ContractRef, Key, URef};
 
-use crate::vesting::PURSE_NAME;
+use crate::{
+    error::Error,
+    input_parser::{self, Input, VestingConfig},
+    vesting::PURSE_NAME
+};
 
 const VESTING_CONTRACT_NAME: &str = "vesting";
 const VESTING_PROXY_CONTRACT_NAME: &str = "vesting_proxy";

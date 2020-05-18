@@ -3,7 +3,7 @@ use std::{env, fs, path::PathBuf, process::Command};
 const CONTRACT_ROOT: &str = "../contract";
 const CONTRACT_CARGO_TOML: &str = "../contract/Cargo.toml";
 const CONTRACT_LIB_RS: &str = "../contract/src/lib.rs";
-const BUILD_ARGS: [&str; 4] = ["build", "--release","-p","contract"];
+const BUILD_ARGS: [&str; 4] = ["build", "--release", "-p", "contract"];
 const WASM_FILENAME: &str = "contract.wasm";
 const ORIGINAL_WASM_DIR: &str = "../target/wasm32-unknown-unknown/release";
 const NEW_WASM_DIR: &str = "wasm";

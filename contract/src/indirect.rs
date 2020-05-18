@@ -1,10 +1,11 @@
-use crate::{
-    error::Error,
-    input_parser::{self, Input},
-};
 use casperlabs_contract::{
     contract_api::{account, runtime, system},
     unwrap_or_revert::UnwrapOrRevert,
+};
+
+use crate::{
+    error::Error,
+    input_parser::{self, Input},
 };
 
 #[no_mangle]

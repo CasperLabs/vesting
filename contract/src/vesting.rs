@@ -10,7 +10,11 @@ use casperlabs_types::{
     CLTyped, URef, U512,
 };
 
-use crate::{input_parser::{self,Input}, error::Error};
+use crate::{
+    error::Error,
+    input_parser::{self, Input},
+};
+
 use logic::{VestingError, VestingTrait};
 
 pub const INIT_FLAG_KEY: &str = "is_initialized";
@@ -51,7 +55,7 @@ impl VestingTrait<Amount, Time> for VestingContract {
 fn construct() {
     let mut vault = VestingContract;
     match input_parser::from_args() {
-        Input::Deploy(_,admin, recipient, vesting_config) => {
+        Input::Deploy(_, admin, recipient, vesting_config) => {
             set_admin_account(admin);
             set_recipient_account(recipient);
             vault.init(
