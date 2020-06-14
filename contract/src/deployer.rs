@@ -1,23 +1,23 @@
 use alloc::{collections::BTreeMap, string::String};
 
-use crate::{
-    api::{self, Api, VestingConfig},
-    error::Error,
-};
 use casperlabs_contract::{
     contract_api::{account, runtime, storage, system},
     unwrap_or_revert::UnwrapOrRevert,
 };
 use casperlabs_types::{account::PublicKey, ContractRef, Key, URef};
 
-use crate::vesting::PURSE_NAME;
+use crate::{
+    error::Error,
+    input_parser::{self, Input, VestingConfig},
+    vesting::PURSE_NAME
+};
 
 const VESTING_CONTRACT_NAME: &str = "vesting";
 const VESTING_PROXY_CONTRACT_NAME: &str = "vesting_proxy";
 
 pub fn deploy() {
-    match Api::from_args() {
-        Api::Deploy(name, admin, recipient, vesting_config) => {
+    match input_parser::from_args() {
+        Input::Deploy(name, admin, recipient, vesting_config) => {
             deploy_vesting_contract(&name, admin, recipient, vesting_config);
             deploy_proxy();
         }
@@ -47,7 +47,8 @@ fn deploy_vesting_contract(
     runtime::call_contract::<_, ()>(
         vesting_ref.clone(),
         (
-            api::INIT,
+            input_parser::DEPLOY,
+            name,
             admin,
             recipient,
             vesting_config.cliff_time,

@@ -10,7 +10,11 @@ use casperlabs_types::{
     CLTyped, URef, U512,
 };
 
-use crate::{api::Api, error::Error};
+use crate::{
+    error::Error,
+    input_parser::{self, Input},
+};
+
 use logic::{VestingError, VestingTrait};
 
 pub const INIT_FLAG_KEY: &str = "is_initialized";
@@ -50,8 +54,8 @@ impl VestingTrait<Amount, Time> for VestingContract {
 
 fn construct() {
     let mut vault = VestingContract;
-    match Api::from_args() {
-        Api::Init(admin, recipient, vesting_config) => {
+    match input_parser::from_args() {
+        Input::Deploy(_, admin, recipient, vesting_config) => {
             set_admin_account(admin);
             set_recipient_account(recipient);
             vault.init(
@@ -69,8 +73,8 @@ fn construct() {
 
 fn entry_point() {
     let mut vault = VestingContract;
-    match Api::from_args() {
-        Api::Pause => {
+    match input_parser::from_args() {
+        Input::Pause => {
             verify_admin_account();
             match vault.pause() {
                 Ok(()) => {}
@@ -78,7 +82,7 @@ fn entry_point() {
                 _ => runtime::revert(Error::UnexpectedVestingError),
             }
         }
-        Api::Unpause => {
+        Input::Unpause => {
             verify_admin_account();
             match vault.unpause() {
                 Ok(()) => {}
@@ -86,7 +90,7 @@ fn entry_point() {
                 _ => runtime::revert(Error::UnexpectedVestingError),
             }
         }
-        Api::Withdraw(purse, amount) => {
+        Input::Withdraw(purse, amount) => {
             verify_recipient_account();
             match vault.withdraw(amount) {
                 Ok(()) => transfer_out_clx_to_purse(purse, amount),
@@ -94,7 +98,7 @@ fn entry_point() {
                 _ => runtime::revert(Error::UnexpectedVestingError),
             }
         }
-        Api::AdminRelease(purse) => {
+        Input::AdminRelease(purse) => {
             verify_admin_account();
             match vault.admin_release() {
                 Ok(amount) => transfer_out_clx_to_purse(purse, amount),
