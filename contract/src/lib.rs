@@ -1,12 +1,11 @@
 extern crate alloc;
 
-mod deployer;
+mod contract;
 mod error;
-mod indirect;
-mod input_parser;
+mod utils;
 mod vesting;
 
 #[no_mangle]
-pub extern "C" fn call() {
-    deployer::deploy();
+fn call() {
+    contract::deploy();
 }

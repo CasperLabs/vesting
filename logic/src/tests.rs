@@ -1,5 +1,4 @@
 use crate::{VestingError, VestingTrait};
-extern crate alloc;
 use alloc::{
     collections::btree_map::BTreeMap,
     string::{String, ToString},
