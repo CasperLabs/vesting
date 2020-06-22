@@ -1,10 +1,9 @@
-use casperlabs_contract::args_parser::ArgsParser;
 use casperlabs_engine_test_support::{Code, Hash, SessionBuilder, TestContext, TestContextBuilder};
-use casperlabs_types::{account::PublicKey, bytesrepr::FromBytes, CLTyped, Key, U512};
+use casperlabs_types::{
+    account::PublicKey, bytesrepr::FromBytes, runtime_args, CLTyped, RuntimeArgs, U512,
+};
 
 const VESTING_WASM: &str = "contract.wasm";
-const VESTING_CONTRACT_NAME: &str = "vesting";
-const VESTING_PROXY_CONTRACT_NAME: &str = "vesting_proxy";
 
 pub mod account {
     use super::PublicKey;
@@ -13,12 +12,34 @@ pub mod account {
     pub const BOB: PublicKey = PublicKey::ed25519_from([3u8; 32]);
 }
 
-pub mod key {
-    pub const VESTING: &str = "vesting";
+mod key {
+    pub const VESTING_CONTRACT_NAME: &str = "vesting_contract";
+    pub const VESTING_CONTRACT_HASH: &str = "vesting_contract_hash";
     pub const TOTAL_AMOUNT: &str = "total_amount";
     pub const RELEASED_AMOUNT: &str = "released_amount";
     pub const PAUSE_FLAG: &str = "is_paused";
 }
+
+mod arg {
+    pub const ADMIN: &str = "admin";
+    pub const RECIPIENT: &str = "recipient";
+    pub const CLIFF_TIME: &str = "cliff_timestamp";
+    pub const CLIFF_AMOUNT: &str = "cliff_amount";
+    pub const DRIP_DURATION: &str = "drip_duration";
+    pub const DRIP_AMOUNT: &str = "drip_amount";
+    pub const TOTAL_AMOUNT: &str = "total_amount";
+    pub const ADMIN_RELEASE_DURATION: &str = "admin_release_duration";
+    pub const AMOUNT: &str = "amount";
+}
+
+mod method {
+    pub const PAUSE: &str = "pause";
+    pub const UNPAUSE: &str = "unpause";
+    pub const WITHDRAW: &str = "withdraw";
+    pub const ADMIN_RELEASE: &str = "admin_release";
+    pub const INIT: &str = "init";
+}
+
 pub struct VestingConfig {
     pub cliff_timestamp: U512,
     pub cliff_amount: U512,
@@ -41,18 +62,9 @@ impl Default for VestingConfig {
     }
 }
 
-mod method {
-    pub const DEPLOY: &str = "deploy";
-    pub const PAUSE: &str = "pause";
-    pub const UNPAUSE: &str = "unpause";
-    pub const WITHDRAW_PROXY: &str = "withdraw_proxy";
-    pub const ADMIN_RELEASE_PROXY: &str = "admin_release_proxy";
-}
-
 pub struct VestingContract {
     pub context: TestContext,
     pub contract_hash: Hash,
-    pub indirect_hash: Hash,
     pub current_time: u64,
 }
 
@@ -68,30 +80,27 @@ impl VestingContract {
             .build();
         let code = Code::from(VESTING_WASM);
         let config: VestingConfig = Default::default();
-        let args = (
-            method::DEPLOY,
-            key::VESTING,
-            account::ADMIN,
-            account::ALI,
-            config.cliff_timestamp,
-            config.cliff_amount,
-            config.drip_duration,
-            config.drip_amount,
-            config.total_amount,
-            config.admin_release_duration,
-        );
+        let args = runtime_args! {
+            arg::ADMIN => account::ADMIN,
+            arg::RECIPIENT => account::ALI,
+            arg::CLIFF_TIME => config.cliff_timestamp,
+            arg::CLIFF_AMOUNT => config.cliff_amount,
+            arg::DRIP_DURATION => config.drip_duration,
+            arg::DRIP_AMOUNT => config.drip_amount,
+            arg::TOTAL_AMOUNT => config.total_amount,
+            arg::ADMIN_RELEASE_DURATION => config.admin_release_duration
+        };
+
         let session = SessionBuilder::new(code, args)
             .with_address(account::ADMIN)
             .with_authorization_keys(&[account::ADMIN])
             .with_block_time(0)
             .build();
         context.run(session);
-        let contract_hash = Self::contract_hash(&context, VESTING_CONTRACT_NAME);
-        let indirect_hash = Self::contract_hash(&context, VESTING_PROXY_CONTRACT_NAME);
+        let contract_hash = Self::contract_hash(&context, key::VESTING_CONTRACT_HASH);
         Self {
             context,
             contract_hash,
-            indirect_hash,
             current_time: 0,
         }
     }
@@ -101,19 +110,16 @@ impl VestingContract {
     }
 
     pub fn contract_hash(context: &TestContext, name: &str) -> Hash {
-        let contract_ref: Key = context
+        context
             .query(account::ADMIN, &[name])
             .unwrap_or_else(|_| panic!("{} contract not found", name))
             .into_t()
-            .unwrap_or_else(|_| panic!("{} is not a type Contract.", name));
-        contract_ref
-            .into_hash()
-            .unwrap_or_else(|| panic!("{} is not a type Hash", name))
+            .unwrap_or_else(|_| panic!("{} has wrong type", name))
     }
 
-    fn call_indirect(&mut self, sender: Sender, args: impl ArgsParser) {
+    fn call_indirect(&mut self, sender: Sender, method: &str, args: RuntimeArgs) {
         let Sender(address) = sender;
-        let code = Code::Hash(self.indirect_hash);
+        let code = Code::Hash(self.contract_hash, method.to_string());
         let session = SessionBuilder::new(code, args)
             .with_address(address)
             .with_authorization_keys(&[address])
@@ -122,8 +128,11 @@ impl VestingContract {
         self.context.run(session);
     }
 
-    pub fn query_contract<T: CLTyped + FromBytes>(&self, name: String) -> Option<T> {
-        match self.context.query(account::ADMIN, &[key::VESTING, &name]) {
+    pub fn query_contract<T: CLTyped + FromBytes>(&self, name: &str) -> Option<T> {
+        match self.context.query(
+            account::ADMIN,
+            &[key::VESTING_CONTRACT_NAME, &name.to_string()],
+        ) {
             Err(_) => None,
             Ok(maybe_value) => {
                 let value = maybe_value
@@ -135,39 +144,62 @@ impl VestingContract {
     }
 
     pub fn get_pause_status(&self) -> bool {
-        let status: Option<bool> = self.query_contract(key::PAUSE_FLAG.to_string());
+        let status: Option<bool> = self.query_contract(key::PAUSE_FLAG);
         status.unwrap()
     }
 
     pub fn get_released_amount(&self) -> u64 {
-        let amount: Option<U512> = self.query_contract(key::RELEASED_AMOUNT.to_string());
+        let amount: Option<U512> = self.query_contract(key::RELEASED_AMOUNT);
         amount.unwrap().as_u64()
     }
 
     pub fn get_total_amount(&self) -> u64 {
-        let balance: Option<U512> = self.query_contract(key::TOTAL_AMOUNT.to_string());
+        let balance: Option<U512> = self.query_contract(key::TOTAL_AMOUNT);
         balance.unwrap().as_u64()
     }
 
     pub fn withdraw(&mut self, sender: Sender, amount: u64) {
         self.call_indirect(
             sender,
-            (
-                (method::WITHDRAW_PROXY, self.contract_hash),
-                U512::from(amount),
-            ),
-        )
+            method::WITHDRAW,
+            runtime_args! {
+                arg::AMOUNT => U512::from(amount)
+            },
+        );
     }
 
     pub fn pause(&mut self, sender: Sender) {
-        self.call_indirect(sender, ((method::PAUSE, self.contract_hash),))
+        self.call_indirect(sender, method::PAUSE, runtime_args! {});
     }
 
     pub fn unpause(&mut self, sender: Sender) {
-        self.call_indirect(sender, ((method::UNPAUSE, self.contract_hash),))
+        self.call_indirect(sender, method::UNPAUSE, runtime_args! {});
     }
 
     pub fn admin_release(&mut self, sender: Sender) {
-        self.call_indirect(sender, ((method::ADMIN_RELEASE_PROXY, self.contract_hash),))
+        self.call_indirect(sender, method::ADMIN_RELEASE, runtime_args! {});
+    }
+
+    pub fn init(
+        &mut self,
+        sender: Sender,
+        admin: PublicKey,
+        recipient: PublicKey,
+        config: VestingConfig,
+    ) {
+        self.call_indirect(
+            sender,
+            method::INIT,
+            runtime_args! {
+                arg::ADMIN => admin,
+                arg::RECIPIENT => recipient,
+                arg::CLIFF_TIME => config.cliff_timestamp,
+                arg::CLIFF_AMOUNT => config.cliff_amount,
+                arg::DRIP_DURATION => config.drip_duration,
+                arg::DRIP_AMOUNT => config.drip_amount,
+                arg::TOTAL_AMOUNT => config.total_amount,
+                arg::ADMIN_RELEASE_DURATION => config.admin_release_duration
+            },
+        );
     }
 }

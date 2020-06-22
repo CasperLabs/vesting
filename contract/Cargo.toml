@@ -1,16 +1,19 @@
 [package]
 name = "contract"
-version = "0.1.0"
-authors = ["karandh <karan@casperlabs.io>","Maciej Zieliński <maciej@casperlabs.io>"]
+version = "0.2.0"
+authors = ["karandh <karan@casperlabs.io>", "Maciej Zieliński <maciej@casperlabs.io>"]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-casperlabs-contract = { git="https://github.com/CasperLabs/CasperLabs", branch="hackathon" }
-casperlabs-types = { git="https://github.com/CasperLabs/CasperLabs", branch="hackathon" }
+casperlabs-contract = { git="https://github.com/CasperLabs/CasperLabs", branch="feature-contract-headers" }
+casperlabs-types = { git="https://github.com/CasperLabs/CasperLabs", branch="feature-contract-headers" }
 logic = { path = "../logic", package = "logic" }
 
+[lib]
+crate-type = ["cdylib"]
+doctest = false
+test = false
+bench = false
 
 [features]
 default = ["casperlabs-contract/std", "casperlabs-types/std"]

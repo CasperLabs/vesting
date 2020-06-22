@@ -1,5 +1,7 @@
 #![no_std]
 
+extern crate alloc;
+
 use core::{
     cmp::{self, Ord},
     ops::{Add, Div, Mul, Sub},
