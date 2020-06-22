@@ -8,6 +8,8 @@ edition = "2018"
 casperlabs-contract = { git="https://github.com/CasperLabs/CasperLabs", branch="feature-contract-headers" }
 casperlabs-types = { git="https://github.com/CasperLabs/CasperLabs", branch="feature-contract-headers" }
 logic = { path = "../logic", package = "logic" }
+casper_macro = { git="https://github.com/CasperLabs/casper_macro", branch="in_progress" }
+
 
 [lib]
 crate-type = ["cdylib"]

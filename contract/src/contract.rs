@@ -12,6 +12,7 @@ use casperlabs_types::{
     contracts::{EntryPoint, EntryPointAccess, EntryPointType, EntryPoints},
     runtime_args, CLType, CLTyped, Group, Key, Parameter, RuntimeArgs, URef, U512,
 };
+use casper_macro::casperlabs_method;
 
 use logic::{VestingError, VestingTrait};
 
@@ -57,25 +58,24 @@ pub struct VestingConfig {
     pub admin_release_duration: U512,
 }
 
-#[no_mangle]
-fn init() {
+
+#[casperlabs_method]
+fn init(admin: PublicKey, recipient: PublicKey, cliff_timestamp: U512, cliff_amount: U512, drip_duration: U512, drip_amount: U512, total_amount: U512, admin_release_duration: U512) {
     let mut vault = VestingContract;
-    let admin: PublicKey = runtime::get_named_arg(arg::ADMIN);
-    let recipient: PublicKey = runtime::get_named_arg(arg::RECIPIENT);
     set_admin_account(admin);
     set_recipient_account(recipient);
-    let vesting_config = get_vesting_config_from_args();
     vault.init(
-        vesting_config.cliff_timestamp,
-        vesting_config.cliff_amount,
-        vesting_config.drip_duration,
-        vesting_config.drip_amount,
-        vesting_config.total_amount,
-        vesting_config.admin_release_duration,
+        cliff_timestamp,
+        cliff_amount,
+        drip_duration,
+        drip_amount,
+        total_amount,
+        admin_release_duration,
     );
+
 }
 
-#[no_mangle]
+#[casperlabs_method]
 fn pause() {
     verify_admin_account();
     let mut vault = VestingContract;
@@ -86,7 +86,7 @@ fn pause() {
     }
 }
 
-#[no_mangle]
+#[casperlabs_method]
 fn unpause() {
     verify_admin_account();
     let mut vault = VestingContract;
@@ -97,7 +97,7 @@ fn unpause() {
     }
 }
 
-#[no_mangle]
+#[casperlabs_method]
 fn withdraw() {
     verify_recipient_account();
     let mut vault = VestingContract;
@@ -109,7 +109,7 @@ fn withdraw() {
     }
 }
 
-#[no_mangle]
+#[casperlabs_method]
 fn admin_release() {
     verify_admin_account();
     let mut vault = VestingContract;
