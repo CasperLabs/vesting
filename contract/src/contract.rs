@@ -3,13 +3,15 @@ use alloc::{
     string::String,
 };
 
-use casper_macro::{casperlabs_constructor, casperlabs_contract, casperlabs_method, casperlabs_initiator};
+use casper_macro::{
+    casperlabs_constructor, casperlabs_contract, casperlabs_initiator, casperlabs_method,
+};
 use casperlabs_contract::{
     contract_api::{account, runtime, storage, system},
     unwrap_or_revert::UnwrapOrRevert,
 };
 use casperlabs_types::{
-    account::PublicKey,
+    account::AccountHash,
     contracts::{EntryPoint, EntryPointAccess, EntryPointType, EntryPoints},
     runtime_args, CLType, CLTyped, Group, Key, Parameter, RuntimeArgs, URef, U512,
 };
@@ -21,50 +23,24 @@ use crate::utils;
 use crate::vesting::VestingContract;
 
 mod key {
-    pub const VESTING_CONTRACT: &str = "vesting_contract";
-    pub const VESTING_CONTRACT_HASH: &str = "vesting_contract_hash";
     pub const PURSE_NAME: &str = "vesting_main_purse";
     pub const ADMIN: &str = "admin_account";
     pub const RECIPIENT: &str = "recipient_account";
-    pub const INIT_GROUP: &str = "init_group";
-}
-
-mod method {
-    pub const INIT: &str = "init";
-    pub const PAUSE: &str = "pause";
-    pub const UNPAUSE: &str = "unpause";
-    pub const WITHDRAW: &str = "withdraw";
-    pub const ADMIN_RELEASE: &str = "admin_release";
 }
 
 mod arg {
-    pub const ADMIN: &str = "admin";
-    pub const RECIPIENT: &str = "recipient";
-    pub const CLIFF_TIMESTAMP: &str = "cliff_timestamp";
-    pub const CLIFF_AMOUNT: &str = "cliff_amount";
-    pub const DRIP_DURATION: &str = "drip_duration";
-    pub const DRIP_AMOUNT: &str = "drip_amount";
     pub const TOTAL_AMOUNT: &str = "total_amount";
-    pub const ADMIN_RELEASE_DURATION: &str = "admin_release_duration";
     pub const AMOUNT: &str = "amount";
-}
-
-pub struct VestingConfig {
-    pub cliff_timestamp: U512,
-    pub cliff_amount: U512,
-    pub drip_duration: U512,
-    pub drip_amount: U512,
-    pub total_amount: U512,
-    pub admin_release_duration: U512,
 }
 
 #[casperlabs_contract]
 mod vesting_contract {
     use super::*;
+
     #[casperlabs_constructor]
     fn init(
-        admin: PublicKey,
-        recipient: PublicKey,
+        admin: AccountHash,
+        recipient: AccountHash,
         cliff_timestamp: U512,
         cliff_amount: U512,
         drip_duration: U512,
@@ -84,6 +60,7 @@ mod vesting_contract {
             admin_release_duration,
         );
     }
+
     #[casperlabs_method]
     fn pause() {
         verify_admin_account();
@@ -139,39 +116,28 @@ mod vesting_contract {
     fn init_state() -> BTreeMap<String, Key> {
         let main_purse = account::get_main_purse();
         let vesting_purse = system::create_purse();
-        system::transfer_from_purse_to_purse(main_purse, vesting_purse, runtime::get_named_arg("total_amount"))
+        let total_amount = runtime::get_named_arg(arg::TOTAL_AMOUNT);
+        system::transfer_from_purse_to_purse(main_purse, vesting_purse, total_amount)
             .unwrap_or_revert_with(Error::PurseTransferError);
         let mut vesting_keys: BTreeMap<String, Key> = BTreeMap::new();
         vesting_keys.insert(String::from(key::PURSE_NAME), vesting_purse.into());
         vesting_keys
     }
-    
 }
 
-fn get_vesting_config_from_args() -> VestingConfig {
-    VestingConfig {
-        cliff_timestamp: runtime::get_named_arg(arg::CLIFF_TIMESTAMP),
-        cliff_amount: runtime::get_named_arg(arg::CLIFF_AMOUNT),
-        drip_duration: runtime::get_named_arg(arg::DRIP_DURATION),
-        drip_amount: runtime::get_named_arg(arg::DRIP_AMOUNT),
-        total_amount: runtime::get_named_arg(arg::TOTAL_AMOUNT),
-        admin_release_duration: runtime::get_named_arg(arg::ADMIN_RELEASE_DURATION),
-    }
-}
-
-fn set_recipient_account(recipient: PublicKey) {
+fn set_recipient_account(recipient: AccountHash) {
     utils::set_key(key::RECIPIENT, recipient);
 }
 
-fn set_admin_account(admin: PublicKey) {
+fn set_admin_account(admin: AccountHash) {
     utils::set_key(key::ADMIN, admin);
 }
 
-fn recipient_account() -> PublicKey {
+fn recipient_account() -> AccountHash {
     utils::get_key(key::RECIPIENT)
 }
 
-fn admin_account() -> PublicKey {
+fn admin_account() -> AccountHash {
     utils::get_key(key::ADMIN)
 }
 

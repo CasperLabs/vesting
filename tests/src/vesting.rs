@@ -1,15 +1,15 @@
 use casperlabs_engine_test_support::{Code, Hash, SessionBuilder, TestContext, TestContextBuilder};
 use casperlabs_types::{
-    account::PublicKey, bytesrepr::FromBytes, runtime_args, CLTyped, RuntimeArgs, U512,
+    account::AccountHash, bytesrepr::FromBytes, runtime_args, CLTyped, RuntimeArgs, U512,
 };
 
 const VESTING_WASM: &str = "contract.wasm";
 
 pub mod account {
-    use super::PublicKey;
-    pub const ADMIN: PublicKey = PublicKey::ed25519_from([1u8; 32]);
-    pub const ALI: PublicKey = PublicKey::ed25519_from([2u8; 32]);
-    pub const BOB: PublicKey = PublicKey::ed25519_from([3u8; 32]);
+    use super::AccountHash;
+    pub const ADMIN: AccountHash = AccountHash::new([1u8; 32]);
+    pub const ALI: AccountHash = AccountHash::new([2u8; 32]);
+    pub const BOB: AccountHash = AccountHash::new([3u8; 32]);
 }
 
 mod key {
@@ -68,7 +68,7 @@ pub struct VestingContract {
     pub current_time: u64,
 }
 
-pub struct Sender(pub PublicKey);
+pub struct Sender(pub AccountHash);
 
 impl VestingContract {
     pub fn deployed() -> Self {
@@ -183,8 +183,8 @@ impl VestingContract {
     pub fn init(
         &mut self,
         sender: Sender,
-        admin: PublicKey,
-        recipient: PublicKey,
+        admin: AccountHash,
+        recipient: AccountHash,
         config: VestingConfig,
     ) {
         self.call_indirect(

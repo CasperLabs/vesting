@@ -3,4 +3,3 @@ mod vesting;
 
 #[cfg(test)]
 mod tests;
-
