@@ -8,7 +8,7 @@ use casperlabs_contract::{
     unwrap_or_revert::UnwrapOrRevert,
 };
 use casperlabs_types::{
-    account::PublicKey,
+    account::AccountHash,
     contracts::{EntryPoint, EntryPointAccess, EntryPointType, EntryPoints},
     runtime_args, CLType, CLTyped, Group, Key, Parameter, RuntimeArgs, URef, U512,
 };
@@ -60,8 +60,8 @@ pub struct VestingConfig {
 #[no_mangle]
 fn init() {
     let mut vault = VestingContract;
-    let admin: PublicKey = runtime::get_named_arg(arg::ADMIN);
-    let recipient: PublicKey = runtime::get_named_arg(arg::RECIPIENT);
+    let admin: AccountHash = runtime::get_named_arg(arg::ADMIN);
+    let recipient: AccountHash = runtime::get_named_arg(arg::RECIPIENT);
     set_admin_account(admin);
     set_recipient_account(recipient);
     let vesting_config = get_vesting_config_from_args();
@@ -148,8 +148,8 @@ pub fn deploy() {
     entry_points.add_entry_point(EntryPoint::new(
         method::INIT.to_string(),
         vec![
-            Parameter::new(arg::ADMIN, PublicKey::cl_type()),
-            Parameter::new(arg::RECIPIENT, PublicKey::cl_type()),
+            Parameter::new(arg::ADMIN, AccountHash::cl_type()),
+            Parameter::new(arg::RECIPIENT, AccountHash::cl_type()),
             Parameter::new(arg::CLIFF_TIMESTAMP, CLType::U512),
             Parameter::new(arg::CLIFF_AMOUNT, CLType::U512),
             Parameter::new(arg::DRIP_DURATION, CLType::U512),
@@ -191,8 +191,8 @@ pub fn deploy() {
     ));
 
     // Read arguments
-    let admin: PublicKey = runtime::get_named_arg(arg::ADMIN);
-    let recipient: PublicKey = runtime::get_named_arg(arg::RECIPIENT);
+    let admin: AccountHash = runtime::get_named_arg(arg::ADMIN);
+    let recipient: AccountHash = runtime::get_named_arg(arg::RECIPIENT);
     let vesting_config = get_vesting_config_from_args();
 
     // // Prepare contract's purse.
@@ -204,7 +204,7 @@ pub fn deploy() {
     vesting_keys.insert(String::from(key::PURSE_NAME), vesting_purse.into());
 
     // Deploy smart contract.
-    let contract_hash =
+    let (contract_hash, _) =
         storage::add_contract_version(contract_package_hash, entry_points, vesting_keys);
 
     // // Save contract under Account's keys.
@@ -240,19 +240,19 @@ fn get_vesting_config_from_args() -> VestingConfig {
     }
 }
 
-fn set_recipient_account(recipient: PublicKey) {
+fn set_recipient_account(recipient: AccountHash) {
     utils::set_key(key::RECIPIENT, recipient);
 }
 
-fn set_admin_account(admin: PublicKey) {
+fn set_admin_account(admin: AccountHash) {
     utils::set_key(key::ADMIN, admin);
 }
 
-fn recipient_account() -> PublicKey {
+fn recipient_account() -> AccountHash {
     utils::get_key(key::RECIPIENT)
 }
 
-fn admin_account() -> PublicKey {
+fn admin_account() -> AccountHash {
     utils::get_key(key::ADMIN)
 }
 
