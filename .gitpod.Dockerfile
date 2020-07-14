@@ -6,7 +6,8 @@ FROM gitpod/workspace-full
 # RUN brew install bastet
 #
 # More information: https://www.gitpod.io/docs/config-docker/
+RUN bash -cl "rustup component add cargo --toolchain nightly-2020-03-19-x86_64-unknown-linux-gnu"
 RUN sudo apt-get -y install \
               protobuf-compiler libprotobuf-dev 
 RUN sudo apt clean
-RUN bash -cl "rustup toolchain install nightly"
+
