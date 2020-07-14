@@ -3,5 +3,6 @@ image:
 
 tasks:
   - init: make prepare
+    command: make prepare
     command: make build-contract
     command: make test
