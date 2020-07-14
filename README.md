@@ -150,3 +150,9 @@ casperlabs_client --host deploy.casperlabs.io deploy \
     --session $VESTING_WASM \
     --session-args "$ARGS"
 ```
+## Testing in an Online IDE
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#snapshot/a3009c86-7282-4235-8f11-49081ef3b2b4)
+
+You can follow the above link to open this project in an online IDE, to build/test the contract. 
+
+
