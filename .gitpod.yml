@@ -4,5 +4,5 @@ image:
 tasks:
   - init: make prepare
     command: make build-contract
-  - before: rustup component add cargo --toolchain nightly-2020-07-05-x86_64-unknown-linux-gnu && make prepare
+  - before: make
     command: make test
