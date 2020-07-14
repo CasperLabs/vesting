@@ -2,7 +2,7 @@ image:
   file: .gitpod.Dockerfile
 
 tasks:
-  - init: make prepare
-    command: make build-contract
-  - before: make
+  - init:  cargo build && make 
+    command: make prepare
+  - before: make build-contract
     command: make test
