@@ -6,7 +6,7 @@ FROM gitpod/workspace-full
 # RUN brew install bastet
 #
 # More information: https://www.gitpod.io/docs/config-docker/
-RUN sudo apt -y install \
+RUN sudo apt-get -y install \
               curl moreutils netcat-openbsd nmap openssh-server psmisc screen socat tmux wget \
               java-common jflex openjdk-11-jdk-headless openjdk-8-jdk-headless sbt=1.\* \
               protobuf-compiler libprotobuf-dev \
