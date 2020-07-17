@@ -11,9 +11,10 @@ use contract::{
     unwrap_or_revert::UnwrapOrRevert,
 };
 use types::{
+    bytesrepr::ToBytes,
     account::AccountHash,
     contracts::{EntryPoint, EntryPointAccess, EntryPointType, EntryPoints},
-    runtime_args, CLType, CLTyped, Group, Key, Parameter, RuntimeArgs, URef, U512,
+    runtime_args, CLType, CLTyped, CLValue, Group, Key, Parameter, RuntimeArgs, URef, U512,
 };
 
 use logic::{VestingError, VestingTrait};

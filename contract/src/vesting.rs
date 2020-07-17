@@ -1,5 +1,5 @@
-use casperlabs_contract::contract_api::runtime;
-use casperlabs_types::U512;
+use contract::contract_api::runtime;
+use types::U512;
 
 use logic::VestingTrait;
 

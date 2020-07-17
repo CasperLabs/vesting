@@ -1,10 +1,10 @@
 use core::convert::TryInto;
 
-use casperlabs_contract::{
+use contract::{
     contract_api::{runtime, storage, system},
     unwrap_or_revert::UnwrapOrRevert,
 };
-use casperlabs_types::{
+use types::{
     bytesrepr::{FromBytes, ToBytes},
     CLTyped, URef, U512,
 };
