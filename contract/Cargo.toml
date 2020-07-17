@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 contract = { git="https://github.com/CasperLabs/CasperLabs", branch="dev", package = "casperlabs-contract" }
-ypes = { git="https://github.com/CasperLabs/CasperLabs", branch="dev", package = "casperlabs-types" }
+types = { git="https://github.com/CasperLabs/CasperLabs", branch="dev", package = "casperlabs-types" }
 logic = { path = "../logic", package = "logic" }
 contract_macro = { git = "https://github.com/CasperLabs/casperlabs_contract_macro", branch = "in_progress", package = "contract_macro"}
 
@@ -17,4 +17,4 @@ test = false
 bench = false
 
 [features]
-default = ["casperlabs-contract/std", "casperlabs-types/std"]
+default = ["contract/std", "types/std"]
