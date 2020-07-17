@@ -6,11 +6,11 @@ use alloc::{
 use contract_macro::{
     casperlabs_constructor, casperlabs_contract, casperlabs_initiator, casperlabs_method,
 };
-use casperlabs_contract::{
+use contract::{
     contract_api::{account, runtime, storage, system},
     unwrap_or_revert::UnwrapOrRevert,
 };
-use casperlabs_types::{
+use types::{
     account::AccountHash,
     contracts::{EntryPoint, EntryPointAccess, EntryPointType, EntryPoints},
     runtime_args, CLType, CLTyped, Group, Key, Parameter, RuntimeArgs, URef, U512,

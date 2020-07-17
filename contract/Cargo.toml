@@ -5,8 +5,8 @@ authors = ["karandh <karan@casperlabs.io>", "Maciej Zieliński <maciej@casperlab
 edition = "2018"
 
 [dependencies]
-casperlabs-contract = { git="https://github.com/CasperLabs/CasperLabs", branch="dev" }
-casperlabs-types = { git="https://github.com/CasperLabs/CasperLabs", branch="dev" }
+contract = { git="https://github.com/CasperLabs/CasperLabs", branch="dev", package = "casperlabs-contract" }
+ypes = { git="https://github.com/CasperLabs/CasperLabs", branch="dev", package = "casperlabs-types" }
 logic = { path = "../logic", package = "logic" }
 contract_macro = { git = "https://github.com/CasperLabs/casperlabs_contract_macro", branch = "in_progress", package = "contract_macro"}
 
