@@ -151,7 +151,7 @@ casperlabs_client --host deploy.casperlabs.io deploy \
     --session-args "$ARGS"
 ```
 ## Testing in an Online IDE
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#snapshot/9f222929-d404-4ea3-a97b-23b953deacd3)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#snapshot/dabd213a-67b7-42d0-b6de-8b8f6fd9cfd5)
 
 You can follow the above link to open this project in an online IDE, to build/test the contract. 
 
