@@ -3,7 +3,7 @@ use alloc::{
     string::String,
 };
 
-use casper_macro::{
+use contract_macro::{
     casperlabs_constructor, casperlabs_contract, casperlabs_initiator, casperlabs_method,
 };
 use casperlabs_contract::{
