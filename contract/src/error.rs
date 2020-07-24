@@ -1,4 +1,4 @@
-use casperlabs_types::ApiError;
+use types::ApiError;
 
 #[repr(u16)]
 pub enum Error {
