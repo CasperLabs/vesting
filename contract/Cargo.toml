@@ -5,13 +5,13 @@ authors = ["karandh <karan@casperlabs.io>", "Maciej Zieliński <maciej@casperlab
 edition = "2018"
 
 [dependencies]
-contract = { git="https://github.com/CasperLabs/CasperLabs", branch="dev", package = "casperlabs-contract" }
-types = { git="https://github.com/CasperLabs/CasperLabs", branch="dev", package = "casperlabs-types" }
-logic = { path = "../logic", package = "logic" }
-contract_macro = { git = "https://github.com/CasperLabs/casperlabs_contract_macro", branch = "in_progress", package = "contract_macro"}
+contract = { package = "casper-contract", version="1.4.4" }
+types = { package = "casper-types", version="1.5.0" }
+num-traits = "0.2.15"
 
-[lib]
-crate-type = ["cdylib"]
+[[bin]]
+name = "contract"
+path = "src/main.rs"
 doctest = false
 test = false
 bench = false

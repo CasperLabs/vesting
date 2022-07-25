@@ -1,0 +1,1 @@
+{"buildTargets":["build-contract","check-lint","clean","clippy","copy-wasm-file-to-test","lint","prepare","test","test-only"],"launchTargets":[],"customConfigurationProvider":{"workspaceBrowse":{"browsePath":[],"compilerArgs":[]},"fileIndex":[]}}

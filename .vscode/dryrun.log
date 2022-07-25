@@ -1,0 +1,5 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory `/Volumes/Data/Work/CasperLabs/vesting'
+rustup target add wasm32-unknown-unknown
+make: Leaving directory `/Volumes/Data/Work/CasperLabs/vesting'
+ 
