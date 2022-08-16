@@ -10,6 +10,7 @@ casper-types = "1.5.0"
 casper-engine-test-support = { version = "2.2.0", features = ["test-support"] }
 casper-execution-engine = "2.0.0"
 test-env = { path = "../utils/test-env" }
+rand = "0.8.5"
 
 [features]
 default = ["casper-contract/std", "casper-types/std", "casper-contract/test-support"]

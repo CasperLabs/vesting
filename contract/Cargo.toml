@@ -16,5 +16,12 @@ doctest = false
 test = false
 bench = false
 
+[[bin]]
+name = "deposit"
+path = "src/deposit.rs"
+bench = false
+doctest = false
+test = false
+
 [features]
 default = ["contract/std", "types/std"]
