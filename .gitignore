@@ -1,4 +1,4 @@
 target
 Cargo.lock
-tests/wasm/contract.wasm
-dump
+tests/wasm/*
+.vscode

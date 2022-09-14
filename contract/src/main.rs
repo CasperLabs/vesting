@@ -1,13 +1,7 @@
 #![no_main]
 
 extern crate alloc;
-mod constants;
 mod error;
-use constants::key::{
-    ADMIN, ADMIN_RELEASE_DURATION, CLIFF_AMOUNT, CLIFF_TIMESTAMP, DRIP_AMOUNT, DRIP_DURATION,
-    LAST_PAUSE_TIMESTAMP, ON_PAUSE_DURATION, PAUSE_FLAG, PURSE_NAME, RECIPIENT, RELEASED_AMOUNT,
-    TOTAL_AMOUNT,
-};
 use contract::{
     contract_api::{runtime, storage, system},
     unwrap_or_revert::UnwrapOrRevert,
@@ -26,8 +20,22 @@ use types::{
 pub type Time = U512;
 pub type Amount = U512;
 
+pub const ADMIN: &str = "admin_account";
+pub const ADMIN_RELEASE_DURATION: &str = "admin_release_duration";
+pub const CLIFF_AMOUNT: &str = "cliff_amount";
+pub const CLIFF_TIMESTAMP: &str = "cliff_timestamp";
+pub const DRIP_AMOUNT: &str = "drip_amount";
+pub const DRIP_DURATION: &str = "drip_duration";
+pub const LAST_PAUSE_TIMESTAMP: &str = "last_pause_timestamp";
+pub const ON_PAUSE_DURATION: &str = "on_pause_duration";
+pub const PAUSE_FLAG: &str = "is_paused";
+pub const PURSE_NAME: &str = "vesting_main_purse";
+pub const RECIPIENT: &str = "recipient_account";
+pub const RELEASED_AMOUNT: &str = "released_amount";
+pub const TOTAL_AMOUNT: &str = "total_amount";
+
 #[no_mangle]
-pub extern "C" fn constructor() {
+pub extern "C" fn initialize() {
     let admin: AccountHash = runtime::get_named_arg("admin");
     let admin_release_duration: U512 = runtime::get_named_arg("admin_release_duration");
     let recipient: AccountHash = runtime::get_named_arg("recipient");
@@ -148,9 +156,11 @@ pub extern "C" fn call() {
     let admin_release_duration: U512 = runtime::get_named_arg("admin_release_duration");
 
     let entry_points = get_entry_points();
+    // let mut named_keys = NamedKeys::new();
+    // named_keys.insert(ADMIN.to_string(), admin.into());
     let (contract_hash, _version) = storage::new_contract(
         entry_points,
-        None,
+        None, //Some(named_keys),
         Some(String::from("vesting_contract_package_hash")),
         None,
     );
@@ -162,7 +172,7 @@ pub extern "C" fn call() {
             .unwrap_or_revert(),
     );
 
-    let constructor_args = runtime_args! {
+    let initialize_args = runtime_args! {
         "admin" => admin,
         "recipient" => recipient,
         "cliff_timestamp" => cliff_timestamp,
@@ -173,16 +183,15 @@ pub extern "C" fn call() {
         "admin_release_duration" => admin_release_duration
     };
 
-    let constructor_access: URef =
-        storage::create_contract_user_group(package_hash, "constructor", 1, Default::default())
+    let initialize_access: URef =
+        storage::create_contract_user_group(package_hash, "initialize", 1, Default::default())
             .unwrap_or_revert()
             .pop()
             .unwrap_or_revert();
-    let _: () = runtime::call_contract(contract_hash, "constructor", constructor_args);
+    let _: () = runtime::call_contract(contract_hash, "initialize", initialize_args);
     let mut urefs = BTreeSet::new();
-    urefs.insert(constructor_access);
-    storage::remove_contract_user_group_urefs(package_hash, "constructor", urefs)
-        .unwrap_or_revert();
+    urefs.insert(initialize_access);
+    storage::remove_contract_user_group_urefs(package_hash, "initialize", urefs).unwrap_or_revert();
 
     runtime::put_key("vesting_contract", contract_hash.into());
     runtime::put_key(
@@ -194,7 +203,7 @@ pub extern "C" fn call() {
 fn get_entry_points() -> EntryPoints {
     let mut entry_points = EntryPoints::new();
     entry_points.add_entry_point(EntryPoint::new(
-        "constructor",
+        "initialize",
         vec![
             Parameter::new("admin", Key::cl_type()),
             Parameter::new("recipient", Key::cl_type()),
@@ -206,7 +215,7 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new("admin_release_duration", U512::cl_type()),
         ],
         <()>::cl_type(),
-        EntryPointAccess::Groups(vec![Group::new("constructor")]),
+        EntryPointAccess::Groups(vec![Group::new("initialize")]),
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
