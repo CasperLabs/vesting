@@ -8,13 +8,12 @@ use contract::{
 };
 use core::cmp;
 use error::Error;
-use std::{collections::BTreeSet, convert::TryInto};
+use std::convert::TryInto;
 use types::{
     account::AccountHash,
     bytesrepr::{FromBytes, ToBytes},
-    contracts::EntryPoints,
-    runtime_args, CLType, CLTyped, CLValue, ContractPackageHash, EntryPoint, EntryPointAccess,
-    EntryPointType, Group, Key, Parameter, RuntimeArgs, URef, U512,
+    contracts::{EntryPoints, NamedKeys},
+    CLType, CLTyped, CLValue, EntryPoint, EntryPointAccess, EntryPointType, Parameter, URef, U512,
 };
 
 pub type Time = U512;
@@ -33,31 +32,6 @@ pub const PURSE_NAME: &str = "vesting_main_purse";
 pub const RECIPIENT: &str = "recipient_account";
 pub const RELEASED_AMOUNT: &str = "released_amount";
 pub const TOTAL_AMOUNT: &str = "total_amount";
-
-#[no_mangle]
-pub extern "C" fn initialize() {
-    let admin: AccountHash = runtime::get_named_arg("admin");
-    let admin_release_duration: U512 = runtime::get_named_arg("admin_release_duration");
-    let recipient: AccountHash = runtime::get_named_arg("recipient");
-    let cliff_amount: U512 = runtime::get_named_arg("cliff_amount");
-    let cliff_timestamp: U512 = runtime::get_named_arg("cliff_timestamp");
-    let drip_amount: U512 = runtime::get_named_arg("drip_amount");
-    let drip_duration: U512 = runtime::get_named_arg("drip_duration");
-    let total_amount: U512 = runtime::get_named_arg("total_amount");
-
-    set_key(ADMIN, admin);
-    set_key(ADMIN_RELEASE_DURATION, admin_release_duration);
-    set_key(CLIFF_AMOUNT, cliff_amount);
-    set_key(CLIFF_TIMESTAMP, cliff_timestamp);
-    set_key(DRIP_AMOUNT, drip_amount);
-    set_key(DRIP_DURATION, drip_duration);
-    set_key(RECIPIENT, recipient);
-    set_key(TOTAL_AMOUNT, total_amount);
-    set_key(LAST_PAUSE_TIMESTAMP, Time::zero());
-    set_key(ON_PAUSE_DURATION, Time::zero());
-    set_key(PAUSE_FLAG, false);
-    set_key(RELEASED_AMOUNT, Amount::zero());
-}
 
 #[no_mangle]
 pub extern "C" fn pause() {
@@ -156,42 +130,55 @@ pub extern "C" fn call() {
     let admin_release_duration: U512 = runtime::get_named_arg("admin_release_duration");
 
     let entry_points = get_entry_points();
-    // let mut named_keys = NamedKeys::new();
-    // named_keys.insert(ADMIN.to_string(), admin.into());
+    let named_keys = {
+        let mut nk = NamedKeys::new();
+        nk.insert(ADMIN.to_string(), storage::new_uref(admin).into());
+        nk.insert(RECIPIENT.to_string(), storage::new_uref(recipient).into());
+        nk.insert(
+            CLIFF_AMOUNT.to_string(),
+            storage::new_uref(cliff_amount).into(),
+        );
+        nk.insert(
+            CLIFF_TIMESTAMP.to_string(),
+            storage::new_uref(cliff_timestamp).into(),
+        );
+        nk.insert(
+            DRIP_AMOUNT.to_string(),
+            storage::new_uref(drip_amount).into(),
+        );
+        nk.insert(
+            DRIP_DURATION.to_string(),
+            storage::new_uref(drip_duration).into(),
+        );
+        nk.insert(
+            TOTAL_AMOUNT.to_string(),
+            storage::new_uref(total_amount).into(),
+        );
+        nk.insert(
+            ADMIN_RELEASE_DURATION.to_string(),
+            storage::new_uref(admin_release_duration).into(),
+        );
+        nk.insert(
+            LAST_PAUSE_TIMESTAMP.to_string(),
+            storage::new_uref(Time::zero()).into(),
+        );
+        nk.insert(
+            ON_PAUSE_DURATION.to_string(),
+            storage::new_uref(Time::zero()).into(),
+        );
+        nk.insert(PAUSE_FLAG.to_string(), storage::new_uref(false).into());
+        nk.insert(
+            RELEASED_AMOUNT.to_string(),
+            storage::new_uref(Amount::zero()).into(),
+        );
+        nk
+    };
     let (contract_hash, _version) = storage::new_contract(
         entry_points,
-        None, //Some(named_keys),
+        Some(named_keys),
         Some(String::from("vesting_contract_package_hash")),
         None,
     );
-
-    let package_hash: ContractPackageHash = ContractPackageHash::new(
-        runtime::get_key("vesting_contract_package_hash")
-            .unwrap_or_revert()
-            .into_hash()
-            .unwrap_or_revert(),
-    );
-
-    let initialize_args = runtime_args! {
-        "admin" => admin,
-        "recipient" => recipient,
-        "cliff_timestamp" => cliff_timestamp,
-        "cliff_amount" => cliff_amount,
-        "drip_duration" => drip_duration,
-        "drip_amount" => drip_amount,
-        "total_amount" => total_amount,
-        "admin_release_duration" => admin_release_duration
-    };
-
-    let initialize_access: URef =
-        storage::create_contract_user_group(package_hash, "initialize", 1, Default::default())
-            .unwrap_or_revert()
-            .pop()
-            .unwrap_or_revert();
-    let _: () = runtime::call_contract(contract_hash, "initialize", initialize_args);
-    let mut urefs = BTreeSet::new();
-    urefs.insert(initialize_access);
-    storage::remove_contract_user_group_urefs(package_hash, "initialize", urefs).unwrap_or_revert();
 
     runtime::put_key("vesting_contract", contract_hash.into());
     runtime::put_key(
@@ -202,22 +189,6 @@ pub extern "C" fn call() {
 
 fn get_entry_points() -> EntryPoints {
     let mut entry_points = EntryPoints::new();
-    entry_points.add_entry_point(EntryPoint::new(
-        "initialize",
-        vec![
-            Parameter::new("admin", Key::cl_type()),
-            Parameter::new("recipient", Key::cl_type()),
-            Parameter::new("cliff_timestamp", U512::cl_type()),
-            Parameter::new("cliff_amount", U512::cl_type()),
-            Parameter::new("drip_duration", U512::cl_type()),
-            Parameter::new("drip_amount", U512::cl_type()),
-            Parameter::new("total_amount", U512::cl_type()),
-            Parameter::new("admin_release_duration", U512::cl_type()),
-        ],
-        <()>::cl_type(),
-        EntryPointAccess::Groups(vec![Group::new("initialize")]),
-        EntryPointType::Contract,
-    ));
     entry_points.add_entry_point(EntryPoint::new(
         "get_deposit_purse",
         vec![],
