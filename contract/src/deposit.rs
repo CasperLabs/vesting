@@ -9,9 +9,7 @@ use types::{runtime_args, ContractHash, RuntimeArgs, URef};
 
 // Session code that executes in the callers context.
 // In this design we use a getter function to fetch a purse from the contract to deposit into.
-// Session code REQUIRES an argument to be passed called `amount`,0x044b2e2F77Bea8943bc7dbC7ceb0A386310268D9
-// c252873d4fe831236e6a87bdb5aaf050ae4fc37afb2524d64493c881ef6bebd8
-// charge general moon race shrimp swap margin shoulder pause click symptom else
+// Session code REQUIRES an argument to be passed called `amount`,
 // Which is used as a limit to how many motes can be transferred from the `main_purse` of the account.
 // NOTE: creating a new purse costs 2,5 cspr, consider storing and reusing them.
 #[no_mangle]
