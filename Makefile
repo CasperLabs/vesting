@@ -8,8 +8,9 @@ test-only:
 	cargo test -p tests
 
 copy-wasm-file-to-test:
-	cp target/wasm32-unknown-unknown/release/contract.wasm tests/wasm
-	cp target/wasm32-unknown-unknown/release/deposit.wasm tests/wasm
+	mkdir -p tests/wasm
+	cp target/wasm32-unknown-unknown/release/contract.wasm tests/wasm/
+	cp target/wasm32-unknown-unknown/release/deposit.wasm tests/wasm/
 
 test: build-contract copy-wasm-file-to-test test-only
 
@@ -24,4 +25,5 @@ lint: clippy
 	
 clean:
 	cargo clean
-	rm -rf tests/wasm/contract.wasm
+	rm -rf tests/wasm/*.wasm
+	rmdir tests/wasm
