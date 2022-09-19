@@ -1,5 +1,9 @@
+PINNED_TOOLCHAIN := $(shell cat rust-toolchain)
+
 prepare:
 	rustup target add wasm32-unknown-unknown
+	rustup component add clippy --toolchain ${PINNED_TOOLCHAIN}
+	rustup component add rustfmt --toolchain ${PINNED_TOOLCHAIN}
 
 build-contract:
 	cargo build --release -p contract --target wasm32-unknown-unknown
